@@ -5,14 +5,8 @@ import { villas, type Villa } from "@/data/villas";
 const INITIAL_COUNT = 10;
 
 export const Route = createFileRoute("/villas/$id")({
-  head: ({ loaderData }: { loaderData: Villa | undefined }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.name} — Firstrose` },
-          { name: "description", content: loaderData.description },
-          { property: "og:title", content: `${loaderData.name} — Firstrose` },
-        ]
-      : [],
+  head: () => ({
+    meta: [{ title: "Villa Details — Firstrose" }],
   }),
   loader: ({ params }) => {
     const villa = villas.find((v) => v.id === params.id);
