@@ -13,6 +13,8 @@ import { Route as VillasRouteImport } from './routes/villas'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VillasIndexRouteImport } from './routes/villas.index'
+import { Route as VillasIdRouteImport } from './routes/villas.$id'
 
 const VillasRoute = VillasRouteImport.update({
   id: '/villas',
@@ -34,39 +36,67 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VillasIndexRoute = VillasIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => VillasRoute,
+} as any)
+const VillasIdRoute = VillasIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => VillasRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
-  '/villas': typeof VillasRoute
+  '/villas': typeof VillasRouteWithChildren
+  '/villas/$id': typeof VillasIdRoute
+  '/villas/': typeof VillasIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
-  '/villas': typeof VillasRoute
+  '/villas/$id': typeof VillasIdRoute
+  '/villas': typeof VillasIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/contact': typeof ContactRoute
-  '/villas': typeof VillasRoute
+  '/villas': typeof VillasRouteWithChildren
+  '/villas/$id': typeof VillasIdRoute
+  '/villas/': typeof VillasIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/contact' | '/villas'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/villas'
+    | '/villas/$id'
+    | '/villas/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/contact' | '/villas'
-  id: '__root__' | '/' | '/about' | '/contact' | '/villas'
+  to: '/' | '/about' | '/contact' | '/villas/$id' | '/villas'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/contact'
+    | '/villas'
+    | '/villas/$id'
+    | '/villas/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   ContactRoute: typeof ContactRoute
-  VillasRoute: typeof VillasRoute
+  VillasRoute: typeof VillasRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -99,14 +129,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/villas/': {
+      id: '/villas/'
+      path: '/'
+      fullPath: '/villas/'
+      preLoaderRoute: typeof VillasIndexRouteImport
+      parentRoute: typeof VillasRoute
+    }
+    '/villas/$id': {
+      id: '/villas/$id'
+      path: '/$id'
+      fullPath: '/villas/$id'
+      preLoaderRoute: typeof VillasIdRouteImport
+      parentRoute: typeof VillasRoute
+    }
   }
 }
+
+interface VillasRouteChildren {
+  VillasIdRoute: typeof VillasIdRoute
+  VillasIndexRoute: typeof VillasIndexRoute
+}
+
+const VillasRouteChildren: VillasRouteChildren = {
+  VillasIdRoute: VillasIdRoute,
+  VillasIndexRoute: VillasIndexRoute,
+}
+
+const VillasRouteWithChildren =
+  VillasRoute._addFileChildren(VillasRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   ContactRoute: ContactRoute,
-  VillasRoute: VillasRoute,
+  VillasRoute: VillasRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

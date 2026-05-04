@@ -100,7 +100,7 @@ function HomePage() {
                 </p>
                 <h3 className="mt-2 font-serif text-2xl text-foreground">{villa.name}</h3>
                 <p className="mt-3 text-sm text-muted-foreground">{villa.description}</p>
-                <div className="mt-6 flex items-center justify-between border-t border-border/60 pt-4">
+                <div className="mt-6 border-t border-border/60 pt-4">
                   <span className="text-sm text-muted-foreground">
                     From{" "}
                     <span className="font-medium text-foreground">
@@ -109,12 +109,21 @@ function HomePage() {
                     </span>{" "}
                     {villa.priceLabel ?? "/ night"}
                   </span>
-                  <Link
-                    to="/contact"
-                    className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
-                  >
-                    Book →
-                  </Link>
+                  <div className="mt-3 flex items-center gap-3">
+                    <Link
+                      to="/villas/$id"
+                      params={{ id: villa.id }}
+                      className="flex-1 rounded-full bg-primary px-4 py-2 text-center text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90"
+                    >
+                      Details
+                    </Link>
+                    <Link
+                      to="/contact"
+                      className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                    >
+                      Book →
+                    </Link>
+                  </div>
                 </div>
               </div>
             </article>
