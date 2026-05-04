@@ -4,16 +4,16 @@ import { villas } from "@/data/villas";
 export const Route = createFileRoute("/villas")({
   head: () => ({
     meta: [
-      { title: "The Villa — Firstrose" },
+      { title: "Our Villas — Firstrose" },
       {
         name: "description",
         content:
-          "Firstrose villa in Diani Beach, Kenya — 10 minutes' walk to the beach. Book your stay today.",
+          "Explore our curated villas in Diani Beach, Kenya — a 3-bed upper floor apartment and a 2-bedroom pool house. Book your stay today.",
       },
-      { property: "og:title", content: "The Villa — Firstrose" },
+      { property: "og:title", content: "Our Villas — Firstrose" },
       {
         property: "og:description",
-        content: "Firstrose villa in Diani Beach, Kenya — 10 minutes' walk to the beach.",
+        content: "Curated coastal villas in Diani Beach, Kenya — book your perfect retreat.",
       },
     ],
   }),
@@ -25,7 +25,7 @@ function VillasPage() {
     <div className="mx-auto max-w-7xl px-6 py-20">
       <div className="mx-auto max-w-2xl text-center">
         <p className="mb-3 text-sm uppercase tracking-[0.3em] text-primary">The Collection</p>
-        <h1 className="font-serif text-5xl text-foreground md:text-6xl">The Villa</h1>
+        <h1 className="font-serif text-5xl text-foreground md:text-6xl">Our Villas</h1>
         <p className="mt-6 text-lg text-muted-foreground">
           A serene retreat on the Kenyan coast — chosen for its setting, soul, and the way it makes you feel the moment you arrive.
         </p>
@@ -62,11 +62,26 @@ function VillasPage() {
                 <span>{villa.baths} Baths</span>
                 <span>Up to {villa.guests} guests</span>
               </div>
-              <div className="mt-8 flex items-center gap-6">
-                <p className="font-serif text-2xl text-foreground">
-                  ${villa.price}
-                  <span className="text-sm font-sans text-muted-foreground"> / night</span>
-                </p>
+              <div className="mt-8 flex flex-wrap items-center gap-6">
+                <div>
+                  <p className="font-serif text-2xl text-foreground">
+                    {villa.currency === "KSH" ? "KSH " : "$"}
+                    {villa.price.toLocaleString()}
+                    <span className="text-sm font-sans text-muted-foreground">
+                      {" "}{villa.priceLabel ?? "/ night"}
+                    </span>
+                  </p>
+                  {villa.minStay && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Minimum {villa.minStay} days
+                    </p>
+                  )}
+                  {villa.monthlyDiscount && (
+                    <p className="text-xs text-muted-foreground">
+                      {villa.monthlyDiscount}% discount for monthly stays
+                    </p>
+                  )}
+                </div>
                 <Link
                   to="/contact"
                   className="rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:scale-105 hover:bg-primary/90"

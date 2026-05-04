@@ -5,7 +5,7 @@ import { villas } from "@/data/villas";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Firstrose — Beachside Villa in Diani Beach, Kenya" },
+      { title: "Firstrose Villa" },
       {
         name: "description",
         content:
