@@ -69,7 +69,7 @@ function HomePage() {
         <div className="mb-16 flex items-end justify-between">
           <div>
             <p className="mb-3 text-sm uppercase tracking-[0.3em] text-primary">Featured</p>
-            <h2 className="font-serif text-4xl text-foreground md:text-5xl">The Firstrose Villa</h2>
+            <h2 className="font-serif text-4xl text-foreground md:text-5xl">Our Villas</h2>
           </div>
           <Link
             to="/villas"
@@ -102,7 +102,12 @@ function HomePage() {
                 <p className="mt-3 text-sm text-muted-foreground">{villa.description}</p>
                 <div className="mt-6 flex items-center justify-between border-t border-border/60 pt-4">
                   <span className="text-sm text-muted-foreground">
-                    From <span className="font-medium text-foreground">${villa.price}</span> / night
+                    From{" "}
+                    <span className="font-medium text-foreground">
+                      {villa.currency === "KSH" ? "KSH " : "$"}
+                      {villa.price.toLocaleString()}
+                    </span>{" "}
+                    {villa.priceLabel ?? "/ night"}
                   </span>
                   <Link
                     to="/contact"
