@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import heroImage from "@/assets/hero-villa.jpeg";
 import { villas } from "@/data/villas";
+import { useCurrentPrices } from "@/hooks/useCurrentPrices";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  const currentPrices = useCurrentPrices();
   return (
     <>
       {/* Hero */}
@@ -105,7 +107,7 @@ function HomePage() {
                     From{" "}
                     <span className="font-medium text-foreground">
                       {villa.currency === "KSH" ? "KSH " : "$"}
-                      {villa.price.toLocaleString()}
+                      {(currentPrices[villa.id] ?? villa.price).toLocaleString()}
                     </span>{" "}
                     {villa.priceLabel ?? "/ night"}
                   </span>

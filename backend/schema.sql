@@ -26,6 +26,31 @@ CREATE TABLE IF NOT EXISTS admin_tokens (
   UNIQUE KEY uk_token (token)
 );
 
+CREATE TABLE IF NOT EXISTS blocked_dates (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  villa_id    VARCHAR(50)  NOT NULL,
+  room_number TINYINT      DEFAULT NULL COMMENT 'NULL = whole villa, 1-3 = specific room',
+  check_in    DATE         NOT NULL,
+  check_out   DATE         NOT NULL,
+  source      VARCHAR(50)  NOT NULL DEFAULT 'manual',
+  note        VARCHAR(255),
+  created_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS pricing_rules (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  villa_id    VARCHAR(50)   NOT NULL,
+  room_number TINYINT       DEFAULT NULL COMMENT 'NULL = whole villa, 1-3 = specific room',
+  start_date  DATE          NOT NULL,
+  end_date    DATE          NOT NULL,
+  price       DECIMAL(10,2) NOT NULL,
+  label       VARCHAR(100),
+  priority    TINYINT       NOT NULL DEFAULT 0,
+  created_at  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_villa_dates (villa_id, start_date, end_date)
+);
+
 -- ── Migrations (safe to run on existing tables) ────────────────────────────────
 
 ALTER TABLE bookings

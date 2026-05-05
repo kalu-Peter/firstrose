@@ -24,6 +24,58 @@ export interface Availability {
   fully_blocked: boolean
 }
 
+export interface PriceDay {
+  date: string
+  price: number
+  label: string | null
+}
+
+export interface PricingResult {
+  villa_id: string
+  nights: number
+  total_price: number
+  daily_prices: PriceDay[]
+  currency: string
+}
+
+export function calculatePrice(villaId: string, checkIn: string, checkOut: string) {
+  return request<PricingResult>(
+    `/api/calculate-price.php?villa_id=${encodeURIComponent(villaId)}&check_in=${checkIn}&check_out=${checkOut}`
+  )
+}
+
+export interface PricingRule {
+  id: number
+  villa_id: string
+  room_number: number | null
+  start_date: string
+  end_date: string
+  price: number
+  label: string | null
+  priority: number
+  created_at: string
+}
+
+export interface BlockedDate {
+  id: number
+  villa_id: string
+  room_number: number | null
+  check_in: string
+  check_out: string
+  source: string
+  note: string | null
+  created_at: string
+}
+
+export interface BlockPayload {
+  villa_id: string
+  room_number?: number | null
+  check_in: string
+  check_out: string
+  source: string
+  note?: string
+}
+
 export interface Booking {
   id: number
   villa_id: string
@@ -101,5 +153,50 @@ export function updateBooking(token: string, id: number, action: 'approve' | 're
     method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify({ id, action }),
+  })
+}
+
+export function getPricingRules(token: string, villaId: string) {
+  return request<PricingRule[]>(`/api/admin/pricing.php?villa_id=${encodeURIComponent(villaId)}`, {
+    headers: authHeaders(token),
+  })
+}
+
+export function addPricingRule(token: string, payload: {
+  villa_id: string; room_number?: number | null; start_date: string; end_date: string;
+  price: number; label?: string; priority?: number;
+}) {
+  return request<PricingRule>('/api/admin/pricing.php', {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function removePricingRule(token: string, id: number) {
+  return request<{ success: boolean }>(`/api/admin/pricing.php?id=${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(token),
+  })
+}
+
+export function getBlockedDates(token: string) {
+  return request<BlockedDate[]>('/api/admin/blocked-dates.php', {
+    headers: authHeaders(token),
+  })
+}
+
+export function addBlock(token: string, payload: BlockPayload) {
+  return request<BlockedDate>('/api/admin/blocked-dates.php', {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  })
+}
+
+export function removeBlock(token: string, id: number) {
+  return request<{ success: boolean }>(`/api/admin/blocked-dates.php?id=${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(token),
   })
 }

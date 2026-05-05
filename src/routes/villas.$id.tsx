@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { villas, type Villa } from "@/data/villas";
+import { getPricingRules, type PricingRule } from "@/lib/api";
 
 const INITIAL_COUNT = 10;
 
@@ -81,12 +82,32 @@ function Lightbox({
   );
 }
 
+function getEffectivePrice(rules: PricingRule[], defaultPrice: number): number {
+  const today = new Date().toISOString().split("T")[0];
+  const active = rules
+    .filter((r) => r.room_number === null && r.start_date <= today && r.end_date >= today)
+    .sort((a, b) => b.priority - a.priority);
+  return active[0]?.price ?? defaultPrice;
+}
+
 function VillaDetailPage() {
   const villa = Route.useLoaderData() as Villa;
   const gallery: string[] = villa.images.length > 0 ? villa.images : [villa.image];
 
   const [showAll, setShowAll] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [rules, setRules] = useState<PricingRule[]>([]);
+
+  useEffect(() => {
+    // Fetch pricing rules silently — no token needed, using admin endpoint would fail
+    // Use the public pricing endpoint instead
+    fetch(`${import.meta.env.VITE_API_URL ?? "http://localhost/firstrose/backend"}/api/pricing.php?villa_id=${villa.id}&month=${new Date().toISOString().slice(0, 7)}`)
+      .then((r) => r.ok ? r.json() : [])
+      .then(setRules)
+      .catch(() => {});
+  }, [villa.id]);
+
+  const displayPrice = getEffectivePrice(rules, villa.price);
 
   const visibleImages = showAll ? gallery : gallery.slice(0, INITIAL_COUNT);
   const hasMore = gallery.length > INITIAL_COUNT;
@@ -136,12 +157,17 @@ function VillaDetailPage() {
           <div className="shrink-0 rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] lg:w-72">
             <p className="font-serif text-3xl text-foreground">
               {villa.currency === "KSH" ? "KSH " : "$"}
-              {villa.price.toLocaleString()}
+              {displayPrice.toLocaleString()}
               <span className="text-sm font-sans text-muted-foreground">
                 {" "}
                 {villa.priceLabel ?? "/ night"}
               </span>
             </p>
+            {displayPrice !== villa.price && (
+              <p className="mt-0.5 text-xs text-muted-foreground line-through">
+                KSH {villa.price.toLocaleString()}
+              </p>
+            )}
             {villa.minStay && (
               <p className="mt-1 text-xs text-muted-foreground">Minimum {villa.minStay} days</p>
             )}

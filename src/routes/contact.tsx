@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, type FormEvent } from "react";
 import { villas } from "@/data/villas";
-import { submitBooking, checkAvailability, type Availability } from "@/lib/api";
+import { submitBooking, checkAvailability, calculatePrice, type Availability, type PricingResult } from "@/lib/api";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -27,6 +27,7 @@ function ContactPage() {
   const [selectedRoom, setSelectedRoom] = useState<number | null>(null);
   const [avail, setAvail]               = useState<Availability | null>(null);
   const [availLoading, setAvailLoading] = useState(false);
+  const [pricing, setPricing]           = useState<PricingResult | null>(null);
   const [loading, setLoading]           = useState(false);
   const [submitted, setSubmitted]       = useState(false);
   const [error, setError]               = useState("");
@@ -54,14 +55,18 @@ function ContactPage() {
 
   useEffect(() => {
     setSelectedRoom(null);
+    setPricing(null);
     if (!checkIn || !checkOut || checkIn >= checkOut) {
       setAvail(null);
       return;
     }
     setAvailLoading(true);
-    checkAvailability(villaId, checkIn, checkOut)
-      .then(setAvail)
-      .catch(() => setAvail(null))
+    Promise.all([
+      checkAvailability(villaId, checkIn, checkOut),
+      calculatePrice(villaId, checkIn, checkOut),
+    ])
+      .then(([av, pr]) => { setAvail(av); setPricing(pr); })
+      .catch(() => { setAvail(null); setPricing(null); })
       .finally(() => setAvailLoading(false));
   }, [villaId, checkIn, checkOut]);
 
@@ -223,6 +228,13 @@ function ContactPage() {
                 <p className="text-sm font-medium text-emerald-700">Available for these dates ✓</p>
               )
             ) : null}
+
+            {/* Price breakdown */}
+            {!availLoading && pricing && !avail?.fully_blocked && (
+              <div className={`${avail ? "mt-4 border-t border-border/40 pt-3" : ""}`}>
+                <PriceBreakdown pricing={pricing} is3Bed={is3Bed} />
+              </div>
+            )}
           </div>
         )}
 
@@ -255,6 +267,40 @@ function ContactPage() {
           {loading ? "Sending…" : "Send Inquiry"}
         </button>
       </form>
+    </div>
+  );
+}
+
+function PriceBreakdown({ pricing, is3Bed }: { pricing: PricingResult; is3Bed: boolean }) {
+  // Group consecutive days with the same price + label
+  const segments: { price: number; label: string | null; nights: number }[] = [];
+  pricing.daily_prices.forEach((day) => {
+    const last = segments[segments.length - 1];
+    if (last && last.price === day.price && last.label === day.label) {
+      last.nights++;
+    } else {
+      segments.push({ price: day.price, label: day.label, nights: 1 });
+    }
+  });
+
+  return (
+    <div className="space-y-1 text-sm">
+      {segments.length > 1 && segments.map((seg, i) => (
+        <div key={i} className="flex justify-between text-muted-foreground">
+          <span>
+            {seg.nights} night{seg.nights !== 1 ? "s" : ""}
+            {seg.label ? ` · ${seg.label}` : ""}
+          </span>
+          <span>KSH {(seg.price * seg.nights).toLocaleString()}</span>
+        </div>
+      ))}
+      <div className="flex justify-between font-medium text-foreground">
+        <span>
+          Total · {pricing.nights} night{pricing.nights !== 1 ? "s" : ""}
+          {is3Bed ? " · per room" : ""}
+        </span>
+        <span>KSH {pricing.total_price.toLocaleString()}</span>
+      </div>
     </div>
   );
 }
