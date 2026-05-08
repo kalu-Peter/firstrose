@@ -13,7 +13,7 @@ function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link to="/" className="font-serif text-xl tracking-tight text-foreground">
-          First<span className="text-primary">rose</span>
+          First<span className="text-white">rose</span>
         </Link>
         <nav className="hidden items-center gap-8 md:flex">
           {navItems.map((item) => (
@@ -46,12 +46,24 @@ function Footer() {
           </div>
           <div>
             <h4 className="text-sm font-medium text-foreground">Contact</h4>
-            <p className="mt-2 text-sm text-muted-foreground">hello@firstrosevilla.com</p>
-            <p className="text-sm text-muted-foreground">+1 (555) 123-4567</p>
+            <p className="mt-2 text-sm text-muted-foreground">info@firstrose.co.ke</p>
+            <p className="text-sm text-muted-foreground">+254 757 541 073</p>
           </div>
           <div>
-            <h4 className="text-sm font-medium text-foreground">Visit</h4>
-            <p className="mt-2 text-sm text-muted-foreground">Diani Beach, Kenya</p>
+            <h4 className="text-sm font-medium text-foreground">Find us</h4>
+            <p className="mt-2 text-sm text-muted-foreground">Mwabungo, Diani Beach, Kenya</p>
+            <div className="mt-3 overflow-hidden rounded-lg">
+              <iframe
+                title="Firstrose location"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3978.297290135709!2d39.55213530977616!3d-4.355231946662163!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x18404ff7a37c6c7f%3A0xced0c5a90d4fc19e!2sfirstrose%20Villa!5e0!3m2!1sen!2ske!4v1778239787513!5m2!1sen!2ske"
+                width="100%"
+                height="160"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
           </div>
         </div>
         <div className="mt-10 border-t border-border/40 pt-6 text-center text-xs text-muted-foreground">

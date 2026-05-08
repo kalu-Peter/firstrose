@@ -40,7 +40,7 @@ export const villas: Villa[] = [
     image: apt3bed,
     images: beds3Images,
     description:
-      "3 rooms with a shared kitchen. Outside is a shared pool — a relaxed upper-floor retreat perfect for groups seeking comfort on the Kenyan coast.",
+      "3 individually bookable rooms on the upper floor — ideal for couples. Each room is KSH 3,300/night and shares a fully equipped kitchen and pool. The entire floor can also be rented as one unit for groups.",
   },
   {
     id: "2bed-pool-house",

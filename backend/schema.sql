@@ -1,5 +1,17 @@
 -- ── Fresh install ─────────────────────────────────────────────────────────────
 
+CREATE TABLE IF NOT EXISTS admins (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  username      VARCHAR(100) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO admins (username, password_hash) VALUES (
+  'admin',
+  '$2y$10$uTtku5kL8WWhaTpJMlsTNeR7KaXCuY/Nx45rYmgWFQDctyBHT.5A.'
+) ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash);
+
 CREATE TABLE IF NOT EXISTS bookings (
   id           INT AUTO_INCREMENT PRIMARY KEY,
   villa_id     VARCHAR(50)  NOT NULL,

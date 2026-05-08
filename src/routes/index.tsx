@@ -149,10 +149,6 @@ function HomePage() {
                 desc: "Every villa is personally visited and curated for character, comfort, and view.",
               },
               {
-                title: "Concierge Service",
-                desc: "From private chefs to boat charters, we craft your stay end to end.",
-              },
-              {
                 title: "Best Price Promise",
                 desc: "Direct bookings with no hidden fees. What you see is what you pay.",
               },
@@ -170,20 +166,6 @@ function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="mx-auto max-w-4xl px-6 py-24 text-center">
-        <h2 className="font-serif text-4xl text-foreground md:text-5xl">
-          Ready for your next escape?
-        </h2>
-        <p className="mt-6 text-lg text-muted-foreground">
-          Tell us your dates and we'll find your perfect villa.
-        </p>
-        <Link
-          to="/contact"
-          className="mt-10 inline-block rounded-full bg-primary px-10 py-4 text-sm font-medium text-primary-foreground shadow-[var(--shadow-elegant)] transition-all hover:scale-105 hover:bg-primary/90"
-        >
-          Start Booking
-        </Link>
-      </section>
     </>
   );
 }
