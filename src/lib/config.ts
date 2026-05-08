@@ -1,6 +1,6 @@
 // ── WhatsApp ──────────────────────────────────────────────────────────────────
 // Replace with the actual WhatsApp number (international format, no + or spaces)
-export const WHATSAPP_NUMBER = "254712345678";
+export const WHATSAPP_NUMBER = "254757541073";
 
 export function whatsappUrl(message: string): string {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
