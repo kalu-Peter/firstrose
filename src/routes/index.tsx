@@ -43,7 +43,7 @@ function HomePage() {
           <h1 className="font-serif text-5xl text-white md:text-6xl">
             Welcome to
             <br />
-            <span className="text-primary">Firstrose Villas</span>
+            <span className="text-white">Firstrose Villas</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg text-white/90">
             A private villa retreat on the Kenyan coast. Just 10 minutes' walk to the white sands of
@@ -134,7 +134,7 @@ function HomePage() {
       </section>
 
       {/* Amenities */}
-      <section className="bg-secondary/40 py-24">
+      <section className="bg-accent/30 py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="mx-auto max-w-2xl text-center">
             <p className="mb-3 text-sm uppercase tracking-[0.3em] text-primary">Why Firstrose</p>

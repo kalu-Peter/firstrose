@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { Link, Outlet } from "@tanstack/react-router";
 import { whatsappUrl, WHATSAPP_GREETING } from "@/lib/config";
 
 function Header() {
+  const [open, setOpen] = useState(false);
+
   const navItems = [
     { to: "/", label: "Home" },
     { to: "/villas", label: "Villas" },
@@ -10,48 +13,86 @@ function Header() {
   ] as const;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full bg-zinc-900 border-b border-white/10">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Link to="/" className="font-serif text-xl tracking-tight text-foreground">
-          First<span className="text-white">rose</span>
+        {/* Logo */}
+        <Link to="/" className="font-serif text-xl tracking-tight text-white">
+          Firstrose
         </Link>
+
+        {/* Desktop nav */}
         <nav className="hidden items-center gap-8 md:flex">
           {navItems.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="text-sm text-muted-foreground transition-colors hover:text-primary"
-              activeProps={{ className: "text-primary text-sm font-medium" }}
+              className="text-sm text-zinc-300 transition-colors hover:text-white"
+              activeProps={{ className: "text-white text-sm font-semibold" }}
               activeOptions={{ exact: item.to === "/" }}
             >
               {item.label}
             </Link>
           ))}
         </nav>
+
+        {/* Mobile hamburger button */}
+        <button
+          className="md:hidden text-white p-2 rounded-md hover:bg-white/10 transition-colors"
+          onClick={() => setOpen((v) => !v)}
+          aria-label="Toggle menu"
+        >
+          {open ? (
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
+        </button>
       </div>
+
+      {/* Mobile dropdown menu */}
+      {open && (
+        <nav className="md:hidden bg-zinc-900 border-t border-white/10 px-6 py-4 flex flex-col gap-1">
+          {navItems.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={() => setOpen(false)}
+              className="text-sm text-zinc-300 hover:text-white hover:bg-white/5 rounded-md px-3 py-2.5 transition-colors"
+              activeProps={{ className: "text-white font-semibold bg-white/10 text-sm rounded-md px-3 py-2.5" }}
+              activeOptions={{ exact: item.to === "/" }}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }
 
 function Footer() {
   return (
-    <footer className="border-t border-border/40 bg-secondary/40">
+    <footer className="bg-zinc-900 border-t border-white/10">
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="grid gap-8 md:grid-cols-3">
           <div>
-            <h3 className="font-serif text-lg text-foreground">Firstrose</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <h3 className="font-serif text-lg text-white">Firstrose</h3>
+            <p className="mt-2 text-sm text-zinc-400">
               Curated coastal villas for unforgettable escapes.
             </p>
           </div>
           <div>
-            <h4 className="text-sm font-medium text-foreground">Contact</h4>
-            <p className="mt-2 text-sm text-muted-foreground">info@firstrose.co.ke</p>
-            <p className="text-sm text-muted-foreground">+254 757 541 073</p>
+            <h4 className="text-sm font-medium text-white">Contact</h4>
+            <p className="mt-2 text-sm text-zinc-400">info@firstrose.co.ke</p>
+            <p className="text-sm text-zinc-400">+254 757 541 073</p>
           </div>
           <div>
-            <h4 className="text-sm font-medium text-foreground">Find us</h4>
-            <p className="mt-2 text-sm text-muted-foreground">Mwabungo, Diani Beach, Kenya</p>
+            <h4 className="text-sm font-medium text-white">Find us</h4>
+            <p className="mt-2 text-sm text-zinc-400">Mwabungo, Diani Beach, Kenya</p>
             <div className="mt-3 overflow-hidden rounded-lg">
               <iframe
                 title="Firstrose location"
@@ -66,7 +107,7 @@ function Footer() {
             </div>
           </div>
         </div>
-        <div className="mt-10 border-t border-border/40 pt-6 text-center text-xs text-muted-foreground">
+        <div className="mt-10 border-t border-white/10 pt-6 text-center text-xs text-zinc-500">
           © {new Date().getFullYear()} Firstrose. All rights reserved.
         </div>
       </div>
