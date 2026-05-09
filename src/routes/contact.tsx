@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import emailjs from "@emailjs/browser";
 import { villas } from "@/data/villas";
-import { submitBooking, checkAvailability, calculatePrice, type Availability, type PricingResult } from "@/lib/api";
 import { whatsappUrl } from "@/lib/config";
 
 export const Route = createFileRoute("/contact")({
@@ -15,22 +15,21 @@ export const Route = createFileRoute("/contact")({
   component: ContactPage,
 });
 
-function buildWhatsAppMessage(
-  villaName?: string,
-  checkIn?: string,
-  checkOut?: string,
-  room?: number | null,
-): string {
+const SERVICE_ID  = import.meta.env.VITE_EMAILJS_SERVICE_ID  as string;
+const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID as string;
+const PUBLIC_KEY  = import.meta.env.VITE_EMAILJS_PUBLIC_KEY  as string;
+
+function buildWhatsAppMessage(villaName?: string, checkIn?: string, checkOut?: string, room?: number | null) {
   let msg = `Hi, I'd like to book at Firstrose Villas, Mwabungo Diani.`;
   if (villaName) msg += `\n\nVilla: ${villaName}`;
-  if (room) msg += ` — Room ${room}`;
-  if (checkIn)  msg += `\nCheck-in: ${checkIn}`;
-  if (checkOut) msg += `\nCheck-out: ${checkOut}`;
+  if (room)      msg += ` — Room ${room}`;
+  if (checkIn)   msg += `\nCheck-in: ${checkIn}`;
+  if (checkOut)  msg += `\nCheck-out: ${checkOut}`;
   msg += `\n\nCould you confirm availability and pricing? Thank you.`;
   return msg;
 }
 
-function addDays(days: number): string {
+function addDays(days: number) {
   const d = new Date();
   d.setDate(d.getDate() + days);
   return d.toISOString().split("T")[0];
@@ -41,82 +40,54 @@ function ContactPage() {
   const [checkIn, setCheckIn]           = useState("");
   const [checkOut, setCheckOut]         = useState("");
   const [selectedRoom, setSelectedRoom] = useState<number | null>(null);
-  const [avail, setAvail]               = useState<Availability | null>(null);
-  const [availLoading, setAvailLoading] = useState(false);
-  const [pricing, setPricing]           = useState<PricingResult | null>(null);
   const [loading, setLoading]           = useState(false);
   const [submitted, setSubmitted]       = useState(false);
   const [error, setError]               = useState("");
 
-  const villa    = villas.find((v) => v.id === villaId);
-  const is3Bed   = villaId === "3bed-upper-floor";
-  const minStay  = villa?.minStay ?? 1;
-  const minCheckIn  = addDays(0); // today — no past dates
-  const minCheckOut = addDays(minStay); // fallback before check-in chosen
+  const villa   = villas.find((v) => v.id === villaId);
+  const is3Bed  = villaId === "3bed-upper-floor";
+  const minStay = villa?.minStay ?? 1;
 
-  // Check-out must be at least minStay days after check-in
   const checkOutMin = checkIn
     ? (() => {
         const d = new Date(checkIn);
         d.setDate(d.getDate() + minStay);
         return d.toISOString().split("T")[0];
       })()
-    : minCheckOut;
+    : addDays(minStay);
 
-  // Reset room + availability when villa or dates change
-  useEffect(() => {
-    setSelectedRoom(null);
-    setAvail(null);
-  }, [villaId]);
-
-  useEffect(() => {
-    setSelectedRoom(null);
-    setPricing(null);
-    if (!checkIn || !checkOut || checkIn >= checkOut) {
-      setAvail(null);
-      return;
-    }
-    setAvailLoading(true);
-    Promise.all([
-      checkAvailability(villaId, checkIn, checkOut),
-      calculatePrice(villaId, checkIn, checkOut),
-    ])
-      .then(([av, pr]) => { setAvail(av); setPricing(pr); })
-      .catch(() => { setAvail(null); setPricing(null); })
-      .finally(() => setAvailLoading(false));
-  }, [villaId, checkIn, checkOut]);
-
-  async function handleSubmit(e: { preventDefault(): void; currentTarget: HTMLFormElement }) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
 
     if (is3Bed && !selectedRoom) {
-      setError("Please select a room.");
-      return;
-    }
-    if (avail?.fully_blocked) {
-      setError("No availability for the selected dates.");
+      setError("Please select a room number.");
       return;
     }
 
-    setLoading(true);
     const fd = new FormData(e.currentTarget);
+
+    setLoading(true);
     try {
-      await submitBooking({
-        villa_id:    villaId,
-        villa_name:  villa?.name ?? villaId,
-        guest_name:  fd.get("name") as string,
-        email:       fd.get("email") as string,
-        phone:       fd.get("phone") as string,
-        check_in:    checkIn,
-        check_out:   checkOut,
-        guests:      Number(fd.get("guests")),
-        message:     fd.get("message") as string,
-        room_number: selectedRoom ?? undefined,
-      });
+      await emailjs.send(
+        SERVICE_ID,
+        TEMPLATE_ID,
+        {
+          villa_name:  villa?.name ?? villaId,
+          room_number: selectedRoom ? `Room ${selectedRoom}` : "Whole villa",
+          check_in:    checkIn,
+          check_out:   checkOut,
+          guest_name:  fd.get("name") as string,
+          email:       fd.get("email") as string,
+          phone:       fd.get("phone") as string,
+          guests:      fd.get("guests") as string,
+          message:     fd.get("message") as string,
+        },
+        PUBLIC_KEY,
+      );
       setSubmitted(true);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } catch {
+      setError("Failed to send your inquiry. Please try WhatsApp or email us directly.");
     } finally {
       setLoading(false);
     }
@@ -128,7 +99,7 @@ function ContactPage() {
         <div className="rounded-2xl bg-accent/40 p-10 text-center">
           <h2 className="font-serif text-2xl text-foreground">Thank you ✦</h2>
           <p className="mt-3 text-muted-foreground">
-            Your request has been received. We'll be in touch soon.
+            Your request has been received. We'll be in touch within 24 hours.
           </p>
         </div>
       </div>
@@ -155,19 +126,50 @@ function ContactPage() {
           <label className="mb-2 block text-sm font-medium text-foreground">Villa</label>
           <select
             value={villaId}
-            onChange={(e) => setVillaId(e.target.value)}
+            onChange={(e) => { setVillaId(e.target.value); setSelectedRoom(null); }}
             className="w-full rounded-lg border border-input bg-card px-4 py-3 text-sm text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
           >
             {villas.map((v) => (
               <option key={v.id} value={v.id}>{v.name}</option>
             ))}
           </select>
-          {is3Bed && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              Min. {minStay} nights · 45% discount for monthly stays
-            </p>
-          )}
         </div>
+
+        {/* Room selection for 3-bed */}
+        {is3Bed && (
+          <div>
+            <label className="mb-2 block text-sm font-medium text-foreground">
+              Room <span className="text-destructive">*</span>
+            </label>
+            <div className="flex gap-3">
+              {[1, 2, 3].map((room) => (
+                <button
+                  key={room}
+                  type="button"
+                  onClick={() => setSelectedRoom(room)}
+                  className={`rounded-full border px-5 py-2 text-sm font-medium transition-all ${
+                    selectedRoom === room
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border text-foreground hover:border-primary"
+                  }`}
+                >
+                  Room {room}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setSelectedRoom(0)}
+                className={`rounded-full border px-5 py-2 text-sm font-medium transition-all ${
+                  selectedRoom === 0
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border text-foreground hover:border-primary"
+                }`}
+              >
+                Whole floor
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Dates */}
         <div className="grid gap-6 md:grid-cols-2">
@@ -176,12 +178,9 @@ function ContactPage() {
             <input
               type="date"
               required
-              min={minCheckIn}
+              min={addDays(0)}
               value={checkIn}
-              onChange={(e) => {
-                setCheckIn(e.target.value);
-                if (checkOut && e.target.value >= checkOut) setCheckOut("");
-              }}
+              onChange={(e) => { setCheckIn(e.target.value); if (checkOut && e.target.value >= checkOut) setCheckOut(""); }}
               className="w-full rounded-lg border border-input bg-card px-4 py-3 text-sm text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
@@ -192,67 +191,12 @@ function ContactPage() {
               required
               min={checkOutMin}
               value={checkOut}
-              onChange={(e) => setCheckOut(e.target.value)}
               disabled={!checkIn}
+              onChange={(e) => setCheckOut(e.target.value)}
               className="w-full rounded-lg border border-input bg-card px-4 py-3 text-sm text-foreground outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
             />
           </div>
         </div>
-
-        {/* Availability */}
-        {checkIn && checkOut && (
-          <div className="rounded-xl border border-border/60 bg-secondary/30 px-4 py-3">
-            {availLoading ? (
-              <p className="text-sm text-muted-foreground">Checking availability…</p>
-            ) : avail ? (
-              avail.fully_blocked ? (
-                <p className="text-sm font-medium text-destructive">
-                  {is3Bed ? "All rooms are booked" : "Fully booked"} for these dates.
-                </p>
-              ) : is3Bed ? (
-                <div>
-                  <p className="text-sm font-medium text-emerald-700">
-                    {avail.available_count} of 3 room{avail.available_count !== 1 ? "s" : ""} available
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {[1, 2, 3].map((room) => {
-                      const free = avail.available_rooms.includes(room);
-                      return (
-                        <button
-                          key={room}
-                          type="button"
-                          disabled={!free}
-                          onClick={() => setSelectedRoom(free ? room : null)}
-                          className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-all ${
-                            selectedRoom === room
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : free
-                              ? "border-border text-foreground hover:border-primary hover:text-primary"
-                              : "border-border/40 text-muted-foreground/40 cursor-not-allowed line-through"
-                          }`}
-                        >
-                          Room {room}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {selectedRoom && (
-                    <p className="mt-2 text-xs text-muted-foreground">Room {selectedRoom} selected</p>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm font-medium text-emerald-700">Available for these dates ✓</p>
-              )
-            ) : null}
-
-            {/* Price breakdown */}
-            {!availLoading && pricing && !avail?.fully_blocked && (
-              <div className={`${avail ? "mt-4 border-t border-border/40 pt-3" : ""}`}>
-                <PriceBreakdown pricing={pricing} is3Bed={is3Bed} />
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Guest info */}
         <div className="grid gap-6 md:grid-cols-2">
@@ -264,9 +208,7 @@ function ContactPage() {
           <Field label="Guests" name="guests" type="number" defaultValue="1" min="1" required />
         </div>
         <div>
-          <label className="mb-2 block text-sm font-medium text-foreground">
-            Message (optional)
-          </label>
+          <label className="mb-2 block text-sm font-medium text-foreground">Message (optional)</label>
           <textarea
             name="message"
             rows={4}
@@ -277,7 +219,7 @@ function ContactPage() {
 
         <button
           type="submit"
-          disabled={loading || availLoading || !!avail?.fully_blocked || (is3Bed && !!checkIn && !!checkOut && !selectedRoom)}
+          disabled={loading}
           className="w-full rounded-full bg-primary px-8 py-4 text-sm font-medium text-primary-foreground shadow-[var(--shadow-elegant)] transition-all hover:scale-[1.02] hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           {loading ? "Sending…" : "Send Inquiry"}
@@ -289,7 +231,6 @@ function ContactPage() {
           <span className="text-xs text-muted-foreground">or</span>
           <div className="h-px flex-1 bg-border/60" />
         </div>
-
         <a
           href={whatsappUrl(buildWhatsAppMessage(villa?.name, checkIn, checkOut, selectedRoom))}
           target="_blank"
@@ -307,52 +248,9 @@ function ContactPage() {
   );
 }
 
-function PriceBreakdown({ pricing, is3Bed }: { pricing: PricingResult; is3Bed: boolean }) {
-  // Group consecutive days with the same price + label
-  const segments: { price: number; label: string | null; nights: number }[] = [];
-  pricing.daily_prices.forEach((day) => {
-    const last = segments[segments.length - 1];
-    if (last && last.price === day.price && last.label === day.label) {
-      last.nights++;
-    } else {
-      segments.push({ price: day.price, label: day.label, nights: 1 });
-    }
-  });
-
-  return (
-    <div className="space-y-1 text-sm">
-      {segments.length > 1 && segments.map((seg, i) => (
-        <div key={i} className="flex justify-between text-muted-foreground">
-          <span>
-            {seg.nights} night{seg.nights !== 1 ? "s" : ""}
-            {seg.label ? ` · ${seg.label}` : ""}
-          </span>
-          <span>KSH {(seg.price * seg.nights).toLocaleString()}</span>
-        </div>
-      ))}
-      <div className="flex justify-between font-medium text-foreground">
-        <span>
-          Total · {pricing.nights} night{pricing.nights !== 1 ? "s" : ""}
-          {is3Bed ? " · per room" : ""}
-        </span>
-        <span>KSH {pricing.total_price.toLocaleString()}</span>
-      </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  name,
-  type = "text",
-  ...rest
-}: {
-  label: string;
-  name: string;
-  type?: string;
-  required?: boolean;
-  defaultValue?: string;
-  min?: string;
+function Field({ label, name, type = "text", ...rest }: {
+  label: string; name: string; type?: string;
+  required?: boolean; defaultValue?: string; min?: string;
 }) {
   return (
     <div>
