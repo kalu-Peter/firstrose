@@ -73,6 +73,7 @@ function ContactPage() {
         SERVICE_ID,
         TEMPLATE_ID,
         {
+          to_email:    "info@firstrose.co.ke",
           villa_name:  villa?.name ?? villaId,
           room_number: selectedRoom ? `Room ${selectedRoom}` : "Whole villa",
           check_in:    checkIn,
