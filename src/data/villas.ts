@@ -1,5 +1,5 @@
 import apt3bed from "@/assets/3beds/WhatsApp Image 2026-05-04 at 12.21.46.jpeg";
-import poolhouse2bed from "@/assets/2beds/WhatsApp Image 2026-05-04 at 12.30.00.jpeg";
+import poolhouse2bed from "@/assets/2beds/WhatsApp Image 2026-05-04 at 12.30.55.jpeg";
 
 const beds3Raw = import.meta.glob<{ default: string }>("/src/assets/3beds/*.jpeg", { eager: true });
 const beds3Images: string[] = Object.values(beds3Raw).map((m) => m.default);
