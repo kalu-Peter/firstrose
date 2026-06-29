@@ -1,3 +1,7 @@
+// ── Site ──────────────────────────────────────────────────────────────────────
+// Used to build canonical URLs and Open Graph tags. Update if the domain changes.
+export const SITE_URL = "https://firstrose.co.ke";
+
 // ── WhatsApp ──────────────────────────────────────────────────────────────────
 // Replace with the actual WhatsApp number (international format, no + or spaces)
 export const WHATSAPP_NUMBER = "254757541073";

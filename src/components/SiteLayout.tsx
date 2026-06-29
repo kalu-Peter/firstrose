@@ -8,6 +8,7 @@ function Header() {
   const navItems = [
     { to: "/", label: "Home" },
     { to: "/villas", label: "Villas" },
+    { to: "/travel-stories", label: "Stories" },
     { to: "/about", label: "About" },
     { to: "/contact", label: "Book Now" },
   ] as const;
