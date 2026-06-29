@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { format } from "date-fns";
 import type { TravelStory } from "@/data/travelStories";
 
 export function StoryCard({ story, index = 0 }: { story: TravelStory; index?: number }) {
@@ -38,7 +39,9 @@ export function StoryCard({ story, index = 0 }: { story: TravelStory; index?: nu
           </p>
 
           <div className="mt-5 flex items-center justify-between border-t border-border/60 pt-4">
-            <span className="text-xs text-muted-foreground">{story.reading_time}</span>
+            <span className="text-xs text-muted-foreground">
+              {format(new Date(story.publish_date), "MMMM yyyy")} · {story.reading_time}
+            </span>
             <span className="inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-all group-hover:bg-primary/90 group-hover:gap-2">
               Read Story <span aria-hidden>→</span>
             </span>

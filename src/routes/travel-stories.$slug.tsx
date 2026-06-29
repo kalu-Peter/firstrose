@@ -102,7 +102,7 @@ function StoryDetailPage() {
           <h1 className="mt-4 font-serif text-4xl text-white md:text-5xl">{story.title}</h1>
           <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/85">
             <span>{story.location}</span>
-            <span>{format(new Date(story.publish_date), "MMMM d, yyyy")}</span>
+            <span>{format(new Date(story.publish_date), "MMMM yyyy")}</span>
             <span>{story.reading_time}</span>
           </div>
         </div>
