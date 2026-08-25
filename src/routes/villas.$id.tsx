@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { SITE_URL } from "@/lib/config";
 import { villas, type Villa } from "@/data/villas";
 import { getPricingRules, type PricingRule } from "@/lib/api";
 
@@ -108,6 +109,77 @@ function VillaDetailPage() {
   }, [villa.id]);
 
   const displayPrice = getEffectivePrice(rules, villa.price);
+
+  useEffect(() => {
+    try {
+      const title = `${villa.name} — Firstrose`;
+      const description = villa.description;
+      const url = SITE_URL + `/villas/${villa.id}`;
+      const image = villa.image || SITE_URL + "/assets/images/og-image.jpg";
+
+      document.title = title;
+
+      const ensureMeta = (attr: string, name: string, content: string) => {
+        const selector = `meta[${attr}="${name}"]`;
+        let el = document.querySelector(selector) as HTMLMetaElement | null;
+        if (!el) {
+          el = document.createElement("meta");
+          el.setAttribute(attr, name);
+          document.head.appendChild(el);
+        }
+        el.setAttribute("content", content);
+      };
+
+      ensureMeta("name", "description", description);
+      ensureMeta("property", "og:title", title);
+      ensureMeta("property", "og:description", description);
+      ensureMeta("property", "og:type", "product");
+      ensureMeta("property", "og:url", url);
+      ensureMeta("property", "og:image", image);
+
+      ensureMeta("name", "twitter:card", "summary_large_image");
+      ensureMeta("name", "twitter:title", title);
+      ensureMeta("name", "twitter:description", description);
+      ensureMeta("name", "twitter:image", image);
+
+      let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+      if (!canonical) {
+        canonical = document.createElement("link");
+        canonical.setAttribute("rel", "canonical");
+        document.head.appendChild(canonical);
+      }
+      canonical.setAttribute("href", url);
+
+      const ld = {
+        "@context": "https://schema.org",
+        "@type": "LodgingBusiness",
+        name: villa.name,
+        description: villa.description,
+        image: image,
+        url: url,
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: villa.location || "Diani Beach",
+        },
+        offers: {
+          "@type": "Offer",
+          price: displayPrice,
+          priceCurrency: villa.currency ?? "KSH",
+        },
+      };
+
+      let script = document.querySelector('script[type="application/ld+json"][data-generated="firstrose-villa"]') as HTMLScriptElement | null;
+      if (!script) {
+        script = document.createElement("script");
+        script.type = "application/ld+json";
+        script.setAttribute("data-generated", "firstrose-villa");
+        document.head.appendChild(script);
+      }
+      script.textContent = JSON.stringify(ld);
+    } catch (e) {
+      // ignore
+    }
+  }, [villa, displayPrice]);
 
   const visibleImages = showAll ? gallery : gallery.slice(0, INITIAL_COUNT);
   const hasMore = gallery.length > INITIAL_COUNT;

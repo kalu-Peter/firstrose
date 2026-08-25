@@ -10,24 +10,16 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VillasRouteImport } from './routes/villas'
-import { Route as TravelStoriesRouteImport } from './routes/travel-stories'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VillasIndexRouteImport } from './routes/villas.index'
-import { Route as TravelStoriesIndexRouteImport } from './routes/travel-stories.index'
 import { Route as VillasIdRouteImport } from './routes/villas.$id'
-import { Route as TravelStoriesSlugRouteImport } from './routes/travel-stories.$slug'
 
 const VillasRoute = VillasRouteImport.update({
   id: '/villas',
   path: '/villas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TravelStoriesRoute = TravelStoriesRouteImport.update({
-  id: '/travel-stories',
-  path: '/travel-stories',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -55,20 +47,10 @@ const VillasIndexRoute = VillasIndexRouteImport.update({
   path: '/',
   getParentRoute: () => VillasRoute,
 } as any)
-const TravelStoriesIndexRoute = TravelStoriesIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => TravelStoriesRoute,
-} as any)
 const VillasIdRoute = VillasIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => VillasRoute,
-} as any)
-const TravelStoriesSlugRoute = TravelStoriesSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => TravelStoriesRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -76,11 +58,8 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/contact': typeof ContactRoute
-  '/travel-stories': typeof TravelStoriesRouteWithChildren
   '/villas': typeof VillasRouteWithChildren
-  '/travel-stories/$slug': typeof TravelStoriesSlugRoute
   '/villas/$id': typeof VillasIdRoute
-  '/travel-stories/': typeof TravelStoriesIndexRoute
   '/villas/': typeof VillasIndexRoute
 }
 export interface FileRoutesByTo {
@@ -88,9 +67,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/contact': typeof ContactRoute
-  '/travel-stories/$slug': typeof TravelStoriesSlugRoute
   '/villas/$id': typeof VillasIdRoute
-  '/travel-stories': typeof TravelStoriesIndexRoute
   '/villas': typeof VillasIndexRoute
 }
 export interface FileRoutesById {
@@ -99,11 +76,8 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/contact': typeof ContactRoute
-  '/travel-stories': typeof TravelStoriesRouteWithChildren
   '/villas': typeof VillasRouteWithChildren
-  '/travel-stories/$slug': typeof TravelStoriesSlugRoute
   '/villas/$id': typeof VillasIdRoute
-  '/travel-stories/': typeof TravelStoriesIndexRoute
   '/villas/': typeof VillasIndexRoute
 }
 export interface FileRouteTypes {
@@ -113,33 +87,19 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/contact'
-    | '/travel-stories'
     | '/villas'
-    | '/travel-stories/$slug'
     | '/villas/$id'
-    | '/travel-stories/'
     | '/villas/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/about'
-    | '/admin'
-    | '/contact'
-    | '/travel-stories/$slug'
-    | '/villas/$id'
-    | '/travel-stories'
-    | '/villas'
+  to: '/' | '/about' | '/admin' | '/contact' | '/villas/$id' | '/villas'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/admin'
     | '/contact'
-    | '/travel-stories'
     | '/villas'
-    | '/travel-stories/$slug'
     | '/villas/$id'
-    | '/travel-stories/'
     | '/villas/'
   fileRoutesById: FileRoutesById
 }
@@ -148,7 +108,6 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
   ContactRoute: typeof ContactRoute
-  TravelStoriesRoute: typeof TravelStoriesRouteWithChildren
   VillasRoute: typeof VillasRouteWithChildren
 }
 
@@ -159,13 +118,6 @@ declare module '@tanstack/react-router' {
       path: '/villas'
       fullPath: '/villas'
       preLoaderRoute: typeof VillasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/travel-stories': {
-      id: '/travel-stories'
-      path: '/travel-stories'
-      fullPath: '/travel-stories'
-      preLoaderRoute: typeof TravelStoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -203,13 +155,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VillasIndexRouteImport
       parentRoute: typeof VillasRoute
     }
-    '/travel-stories/': {
-      id: '/travel-stories/'
-      path: '/'
-      fullPath: '/travel-stories/'
-      preLoaderRoute: typeof TravelStoriesIndexRouteImport
-      parentRoute: typeof TravelStoriesRoute
-    }
     '/villas/$id': {
       id: '/villas/$id'
       path: '/$id'
@@ -217,29 +162,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VillasIdRouteImport
       parentRoute: typeof VillasRoute
     }
-    '/travel-stories/$slug': {
-      id: '/travel-stories/$slug'
-      path: '/$slug'
-      fullPath: '/travel-stories/$slug'
-      preLoaderRoute: typeof TravelStoriesSlugRouteImport
-      parentRoute: typeof TravelStoriesRoute
-    }
   }
 }
-
-interface TravelStoriesRouteChildren {
-  TravelStoriesSlugRoute: typeof TravelStoriesSlugRoute
-  TravelStoriesIndexRoute: typeof TravelStoriesIndexRoute
-}
-
-const TravelStoriesRouteChildren: TravelStoriesRouteChildren = {
-  TravelStoriesSlugRoute: TravelStoriesSlugRoute,
-  TravelStoriesIndexRoute: TravelStoriesIndexRoute,
-}
-
-const TravelStoriesRouteWithChildren = TravelStoriesRoute._addFileChildren(
-  TravelStoriesRouteChildren,
-)
 
 interface VillasRouteChildren {
   VillasIdRoute: typeof VillasIdRoute
@@ -259,7 +183,6 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
   ContactRoute: ContactRoute,
-  TravelStoriesRoute: TravelStoriesRouteWithChildren,
   VillasRoute: VillasRouteWithChildren,
 }
 export const routeTree = rootRouteImport

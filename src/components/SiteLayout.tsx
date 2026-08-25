@@ -1,6 +1,78 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, Outlet } from "@tanstack/react-router";
-import { whatsappUrl, WHATSAPP_GREETING } from "@/lib/config";
+import { whatsappUrl, WHATSAPP_GREETING, SITE_URL } from "@/lib/config";
+
+function GlobalSEO() {
+  useEffect(() => {
+    const title = "Firstrose — Curated coastal villas";
+    const description = "Curated coastal villas for unforgettable escapes in Diani Beach, Kenya.";
+    const url = SITE_URL + (typeof window !== "undefined" ? window.location.pathname : "/");
+    const image = SITE_URL + "/assets/images/og-image.jpg";
+
+    try {
+      document.title = title;
+
+      const ensureMeta = (attr: string, name: string, content: string) => {
+        const selector = `meta[${attr}="${name}"]`;
+        let el = document.querySelector(selector) as HTMLMetaElement | null;
+        if (!el) {
+          el = document.createElement("meta");
+          el.setAttribute(attr, name);
+          document.head.appendChild(el);
+        }
+        el.setAttribute("content", content);
+      };
+
+      ensureMeta("name", "description", description);
+      ensureMeta("name", "robots", "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1");
+
+      ensureMeta("property", "og:title", title);
+      ensureMeta("property", "og:description", description);
+      ensureMeta("property", "og:type", "website");
+      ensureMeta("property", "og:site_name", "Firstrose");
+      ensureMeta("property", "og:locale", "en_US");
+      ensureMeta("property", "og:url", url);
+      ensureMeta("property", "og:image", image);
+
+      ensureMeta("name", "twitter:site", "@firstrose");
+
+      ensureMeta("name", "twitter:card", "summary_large_image");
+      ensureMeta("name", "twitter:title", title);
+      ensureMeta("name", "twitter:description", description);
+      ensureMeta("name", "twitter:image", image);
+
+      let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+      if (!canonical) {
+        canonical = document.createElement("link");
+        canonical.setAttribute("rel", "canonical");
+        document.head.appendChild(canonical);
+      }
+      canonical.setAttribute("href", url);
+
+      const ld = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        url: SITE_URL,
+        name: "Firstrose",
+        logo: SITE_URL + "/favicon.svg",
+        sameAs: [],
+      };
+
+      let script = document.querySelector('script[type="application/ld+json"][data-generated="firstrose"]') as HTMLScriptElement | null;
+      if (!script) {
+        script = document.createElement("script");
+        script.type = "application/ld+json";
+        script.setAttribute("data-generated", "firstrose");
+        document.head.appendChild(script);
+      }
+      script.textContent = JSON.stringify(ld);
+    } catch (e) {
+      // ignore errors in DOM manipulation
+    }
+  }, []);
+
+  return null;
+}
 
 function Header() {
   const [open, setOpen] = useState(false);
@@ -8,7 +80,6 @@ function Header() {
   const navItems = [
     { to: "/", label: "Home" },
     { to: "/villas", label: "Villas" },
-    { to: "/travel-stories", label: "Stories" },
     { to: "/about", label: "About" },
     { to: "/contact", label: "Book Now" },
   ] as const;
@@ -140,6 +211,7 @@ function WhatsAppFloat() {
 export function SiteLayout() {
   return (
     <div className="flex min-h-screen flex-col">
+      <GlobalSEO />
       <Header />
       <main className="flex-1">
         <Outlet />
