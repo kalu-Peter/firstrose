@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import heroImage from "@/assets/hero-villa.jpeg";
 import { villas } from "@/data/villas";
+import { reviews } from "@/data/reviews";
 import { useCurrentPrices } from "@/hooks/useCurrentPrices";
 
 export const Route = createFileRoute("/")({
@@ -162,6 +163,37 @@ function HomePage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Reviews */}
+      <section className="mx-auto max-w-7xl px-6 py-24">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="mb-3 text-sm uppercase tracking-[0.3em] text-primary">Guest Reviews</p>
+          <h2 className="font-serif text-4xl text-foreground md:text-5xl">What our guests say</h2>
+        </div>
+        <div className="mt-16 grid gap-8 md:grid-cols-3">
+          {reviews.map((review) => (
+            <figure
+              key={review.name + review.date}
+              className="flex flex-col rounded-2xl bg-card p-8 shadow-[var(--shadow-card)]"
+            >
+              <div className="mb-4 flex gap-1 text-primary" aria-hidden="true">
+                {Array.from({ length: review.rating }).map((_, i) => (
+                  <span key={i}>★</span>
+                ))}
+              </div>
+              <blockquote className="flex-1 text-sm leading-relaxed text-muted-foreground">
+                “{review.text}”
+              </blockquote>
+              <figcaption className="mt-6 border-t border-border/60 pt-4">
+                <p className="font-serif text-lg text-foreground">{review.name}</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  {review.date}
+                </p>
+              </figcaption>
+            </figure>
+          ))}
         </div>
       </section>
 
