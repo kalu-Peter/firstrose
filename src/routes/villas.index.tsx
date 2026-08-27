@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import { villas } from "@/data/villas";
 import { useCurrentPrices } from "@/hooks/useCurrentPrices";
+import { fadeInUp, fadeInLeft, fadeInRight, viewportOnce, revealTransition } from "@/lib/motion";
 
 export const Route = createFileRoute("/villas/")({
   head: () => ({
@@ -26,19 +28,31 @@ function VillasPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-20">
-      <div className="mx-auto max-w-2xl text-center">
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={viewportOnce}
+        variants={fadeInUp}
+        transition={revealTransition()}
+        className="mx-auto max-w-2xl text-center"
+      >
         <p className="mb-3 text-sm uppercase tracking-[0.3em] text-primary">The Collection</p>
         <h1 className="font-serif text-5xl text-foreground md:text-6xl">Our Villas</h1>
         <p className="mt-6 text-lg text-muted-foreground">
           A serene retreat on the Kenyan coast chosen for its setting, soul, and the way it makes
           you feel the moment you arrive.
         </p>
-      </div>
+      </motion.div>
 
       <div className="mt-20 space-y-20">
         {villas.map((villa, i) => (
-          <article
+          <motion.article
             key={villa.id}
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            variants={i % 2 === 1 ? fadeInRight : fadeInLeft}
+            transition={revealTransition()}
             className={`grid gap-10 md:grid-cols-2 md:items-center ${
               i % 2 === 1 ? "md:[&>div:first-child]:order-2" : ""
             }`}
@@ -104,7 +118,7 @@ function VillasPage() {
                 </div>
               </div>
             </div>
-          </article>
+          </motion.article>
         ))}
       </div>
     </div>

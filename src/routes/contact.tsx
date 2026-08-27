@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import emailjs from "@emailjs/browser";
 import { villas } from "@/data/villas";
 import { whatsappUrl } from "@/lib/config";
+import { fadeInUp, fadeInLeft, viewportOnce, revealTransition } from "@/lib/motion";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -109,13 +111,46 @@ function ContactPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-24">
-      <p className="mb-3 text-sm uppercase tracking-[0.3em] text-primary">Booking Inquiry</p>
-      <h1 className="font-serif text-5xl text-foreground md:text-6xl">Reserve your villa</h1>
-      <p className="mt-6 text-lg text-muted-foreground">
+      <motion.p
+        initial="hidden"
+        whileInView="visible"
+        viewport={viewportOnce}
+        variants={fadeInLeft}
+        transition={revealTransition()}
+        className="mb-3 text-sm uppercase tracking-[0.3em] text-primary"
+      >
+        Booking Inquiry
+      </motion.p>
+      <motion.h1
+        initial="hidden"
+        whileInView="visible"
+        viewport={viewportOnce}
+        variants={fadeInLeft}
+        transition={revealTransition(0.1)}
+        className="font-serif text-5xl text-foreground md:text-6xl"
+      >
+        Reserve your villa
+      </motion.h1>
+      <motion.p
+        initial="hidden"
+        whileInView="visible"
+        viewport={viewportOnce}
+        variants={fadeInLeft}
+        transition={revealTransition(0.2)}
+        className="mt-6 text-lg text-muted-foreground"
+      >
         Share a few details and our team will reply within 24 hours with confirmation.
-      </p>
+      </motion.p>
 
-      <form onSubmit={handleSubmit} className="mt-12 space-y-6">
+      <motion.form
+        onSubmit={handleSubmit}
+        initial="hidden"
+        whileInView="visible"
+        viewport={viewportOnce}
+        variants={fadeInUp}
+        transition={revealTransition(0.3)}
+        className="mt-12 space-y-6"
+      >
         {error && (
           <p className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {error}
@@ -244,7 +279,7 @@ function ContactPage() {
           </svg>
           Book via WhatsApp
         </a>
-      </form>
+      </motion.form>
     </div>
   );
 }

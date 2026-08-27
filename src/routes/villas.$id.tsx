@@ -1,8 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { SITE_URL } from "@/lib/config";
 import { villas, type Villa } from "@/data/villas";
 import { getPricingRules, type PricingRule } from "@/lib/api";
+import { fadeInUp, fadeInLeft, fadeInRight, viewportOnce, revealTransition } from "@/lib/motion";
 
 const INITIAL_COUNT = 10;
 
@@ -210,7 +212,14 @@ function VillaDetailPage() {
       <div className="mx-auto max-w-7xl px-6">
         {/* Info + booking */}
         <div className="mt-10 flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex-1">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            variants={fadeInLeft}
+            transition={revealTransition()}
+            className="flex-1"
+          >
             <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
               {villa.location}
             </p>
@@ -223,10 +232,17 @@ function VillaDetailPage() {
             <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground">
               {villa.description}
             </p>
-          </div>
+          </motion.div>
 
           {/* Pricing card */}
-          <div className="shrink-0 rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] lg:w-72">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            variants={fadeInRight}
+            transition={revealTransition(0.1)}
+            className="shrink-0 rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] lg:w-72"
+          >
             <p className="font-serif text-3xl text-foreground">
               {villa.currency === "KSH" ? "KSH " : "$"}
               {displayPrice.toLocaleString()}
@@ -254,22 +270,34 @@ function VillaDetailPage() {
             >
               Book this villa
             </Link>
-          </div>
+          </motion.div>
         </div>
 
         {/* Gallery */}
         {gallery.length > 0 && (
           <div className="mt-16">
-            <h2 className="mb-6 font-serif text-2xl text-foreground">
+            <motion.h2
+              initial="hidden"
+              whileInView="visible"
+              viewport={viewportOnce}
+              variants={fadeInUp}
+              transition={revealTransition()}
+              className="mb-6 font-serif text-2xl text-foreground"
+            >
               Gallery
               <span className="ml-3 font-sans text-sm font-normal text-muted-foreground">
                 {gallery.length} photos
               </span>
-            </h2>
+            </motion.h2>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
               {visibleImages.map((src: string, i: number) => (
-                <button
+                <motion.button
                   key={i}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={viewportOnce}
+                  variants={fadeInUp}
+                  transition={revealTransition((i % 6) * 0.06)}
                   className="aspect-[4/3] overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
                   onClick={() => setLightboxIndex(i)}
                   aria-label={`View photo ${i + 1}`}
@@ -280,7 +308,7 @@ function VillaDetailPage() {
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                   />
-                </button>
+                </motion.button>
               ))}
             </div>
 

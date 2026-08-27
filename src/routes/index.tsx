@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import heroImage from "@/assets/hero-villa.jpeg";
 import { villas } from "@/data/villas";
 import { reviews } from "@/data/reviews";
 import { useCurrentPrices } from "@/hooks/useCurrentPrices";
+import { fadeInUp, fadeInLeft, viewportOnce, revealTransition } from "@/lib/motion";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -38,19 +40,42 @@ function HomePage() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/60" />
         <div className="relative mx-auto flex h-full max-w-7xl flex-col items-start justify-end px-6 pb-24">
-          <p className="mb-4 text-sm uppercase tracking-[0.3em] text-white/80">
+          <motion.p
+            initial="hidden"
+            animate="visible"
+            variants={fadeInLeft}
+            transition={revealTransition(0)}
+            className="mb-4 text-sm uppercase tracking-[0.3em] text-white/80"
+          >
             Diani Beach, Kenya
-          </p>
-          <h1 className="font-serif text-5xl text-white md:text-6xl">
+          </motion.p>
+          <motion.h1
+            initial="hidden"
+            animate="visible"
+            variants={fadeInLeft}
+            transition={revealTransition(0.1)}
+            className="font-serif text-5xl text-white md:text-6xl"
+          >
             Welcome to
             <br />
             <span className="text-white">Firstrose Villas</span>
-          </h1>
-          <p className="mt-6 max-w-xl text-lg text-white/90">
-            A private villa retreat on the Kenyan coast. Just 10 minutes' walk to the white sands of
-            Diani Beach.
-          </p>
-          <div className="mt-10 flex gap-4">
+          </motion.h1>
+          <motion.p
+            initial="hidden"
+            animate="visible"
+            variants={fadeInLeft}
+            transition={revealTransition(0.2)}
+            className="mt-6 max-w-xl text-lg text-white/90"
+          >
+            Private Villa Accommodation at Diani, Galu Beach. Firstrose Villa Kenya
+          </motion.p>
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={fadeInUp}
+            transition={revealTransition(0.3)}
+            className="mt-10 flex gap-4"
+          >
             <Link
               to="/villas"
               className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow-[var(--shadow-elegant)] transition-all hover:scale-105 hover:bg-primary/90"
@@ -63,13 +88,20 @@ function HomePage() {
             >
               Book a Stay
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Featured villas */}
       <section className="mx-auto max-w-7xl px-6 py-24">
-        <div className="mb-16 flex items-end justify-between">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+          variants={fadeInLeft}
+          transition={revealTransition()}
+          className="mb-16 flex items-end justify-between"
+        >
           <div>
             <p className="mb-3 text-sm uppercase tracking-[0.3em] text-primary">Featured</p>
             <h2 className="font-serif text-4xl text-foreground md:text-5xl">Our Villas</h2>
@@ -80,11 +112,16 @@ function HomePage() {
           >
             View all →
           </Link>
-        </div>
+        </motion.div>
         <div className="grid gap-8 md:grid-cols-3">
-          {villas.map((villa) => (
-            <article
+          {villas.map((villa, i) => (
+            <motion.article
               key={villa.id}
+              initial="hidden"
+              whileInView="visible"
+              viewport={viewportOnce}
+              variants={fadeInUp}
+              transition={revealTransition(i * 0.1)}
               className="group overflow-hidden rounded-2xl bg-card shadow-[var(--shadow-card)] transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]"
             >
               <div className="aspect-[4/3] overflow-hidden">
@@ -129,7 +166,7 @@ function HomePage() {
                   </div>
                 </div>
               </div>
-            </article>
+            </motion.article>
           ))}
         </div>
       </section>
@@ -137,12 +174,19 @@ function HomePage() {
       {/* Amenities */}
       <section className="bg-accent/30 py-24">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="mx-auto max-w-2xl text-center">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            variants={fadeInUp}
+            transition={revealTransition()}
+            className="mx-auto max-w-2xl text-center"
+          >
             <p className="mb-3 text-sm uppercase tracking-[0.3em] text-primary">Why Firstrose</p>
             <h2 className="font-serif text-4xl text-foreground md:text-5xl">
               Designed for slow living
             </h2>
-          </div>
+          </motion.div>
           <div className="mt-16 grid gap-12 md:grid-cols-3">
             {[
               {
@@ -153,14 +197,22 @@ function HomePage() {
                 title: "Best Price Promise",
                 desc: "Direct bookings with no hidden fees. What you see is what you pay.",
               },
-            ].map((item) => (
-              <div key={item.title} className="text-center">
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial="hidden"
+                whileInView="visible"
+                viewport={viewportOnce}
+                variants={fadeInUp}
+                transition={revealTransition(i * 0.1)}
+                className="text-center"
+              >
                 <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-accent">
                   <span className="font-serif text-xl text-accent-foreground">✦</span>
                 </div>
                 <h3 className="font-serif text-xl text-foreground">{item.title}</h3>
                 <p className="mt-3 text-sm text-muted-foreground">{item.desc}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -168,19 +220,31 @@ function HomePage() {
 
       {/* Reviews */}
       <section className="mx-auto max-w-7xl px-6 py-24">
-        <div className="mx-auto max-w-2xl text-center">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+          variants={fadeInUp}
+          transition={revealTransition()}
+          className="mx-auto max-w-2xl text-center"
+        >
           <p className="mb-3 text-sm uppercase tracking-[0.3em] text-primary">Guest Reviews</p>
           <h2 className="font-serif text-4xl text-foreground md:text-5xl">What our guests say</h2>
-        </div>
+        </motion.div>
         <div className="mt-16 grid gap-8 md:grid-cols-3">
-          {reviews.map((review) => (
-            <figure
+          {reviews.map((review, i) => (
+            <motion.figure
               key={review.name + review.date}
+              initial="hidden"
+              whileInView="visible"
+              viewport={viewportOnce}
+              variants={fadeInUp}
+              transition={revealTransition(i * 0.1)}
               className="flex flex-col rounded-2xl bg-card p-8 shadow-[var(--shadow-card)]"
             >
               <div className="mb-4 flex gap-1 text-primary" aria-hidden="true">
-                {Array.from({ length: review.rating }).map((_, i) => (
-                  <span key={i}>★</span>
+                {Array.from({ length: review.rating }).map((_, si) => (
+                  <span key={si}>★</span>
                 ))}
               </div>
               <blockquote className="flex-1 text-sm leading-relaxed text-muted-foreground">
@@ -192,7 +256,7 @@ function HomePage() {
                   {review.date}
                 </p>
               </figcaption>
-            </figure>
+            </motion.figure>
           ))}
         </div>
       </section>
