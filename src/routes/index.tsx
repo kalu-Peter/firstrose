@@ -122,7 +122,7 @@ function HomePage() {
               viewport={viewportOnce}
               variants={fadeInUp}
               transition={revealTransition(i * 0.1)}
-              className="group overflow-hidden rounded-2xl bg-card shadow-[var(--shadow-card)] transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]"
+              className="group overflow-hidden rounded-2xl border border-gray-300 bg-card shadow-[var(--shadow-card)] transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]"
             >
               <div className="aspect-[4/3] overflow-hidden">
                 <img
