@@ -1,0 +1,8 @@
+# robots.txt for Firstrose
+# Allow all crawlers but block the admin area. Update the Sitemap URL to your production domain if different.
+
+User-agent: *
+Allow: /
+Disallow: /admin
+
+Sitemap: https://firstrose.co.ke/sitemap.xml

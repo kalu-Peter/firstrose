@@ -1,0 +1,14 @@
+# Handle CORS at Apache level so preflight OPTIONS never needs PHP
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization"
+    Header always set Access-Control-Max-Age "86400"
+</IfModule>
+
+# Return 204 for OPTIONS preflight immediately — no PHP needed
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule .* - [R=204,L]
+</IfModule>

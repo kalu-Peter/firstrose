@@ -1,0 +1,332 @@
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { SITE_URL } from "@/lib/config";
+import { villas, type Villa } from "@/data/villas";
+import { getPricingRules, type PricingRule } from "@/lib/api";
+import { fadeInUp, fadeInLeft, fadeInRight, viewportOnce, revealTransition } from "@/lib/motion";
+
+const INITIAL_COUNT = 10;
+
+export const Route = createFileRoute("/villas/$id")({
+  head: () => ({
+    meta: [{ title: "Villa Details — Firstrose" }],
+  }),
+  loader: ({ params }) => {
+    const villa = villas.find((v) => v.id === params.id);
+    if (!villa) throw notFound();
+    return villa;
+  },
+  component: VillaDetailPage,
+});
+
+function Lightbox({
+  images,
+  index,
+  onClose,
+  onPrev,
+  onNext,
+}: {
+  images: string[];
+  index: number;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+      onClick={onClose}
+    >
+      {/* Close */}
+      <button
+        className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
+        onClick={onClose}
+        aria-label="Close"
+      >
+        ✕
+      </button>
+
+      {/* Prev */}
+      {index > 0 && (
+        <button
+          className="absolute left-4 rounded-full bg-white/10 px-4 py-3 text-white transition hover:bg-white/20"
+          onClick={(e) => { e.stopPropagation(); onPrev(); }}
+          aria-label="Previous"
+        >
+          ‹
+        </button>
+      )}
+
+      {/* Image */}
+      <img
+        src={images[index]}
+        alt={`Photo ${index + 1}`}
+        className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      />
+
+      {/* Next */}
+      {index < images.length - 1 && (
+        <button
+          className="absolute right-4 rounded-full bg-white/10 px-4 py-3 text-white transition hover:bg-white/20"
+          onClick={(e) => { e.stopPropagation(); onNext(); }}
+          aria-label="Next"
+        >
+          ›
+        </button>
+      )}
+
+      {/* Counter */}
+      <p className="absolute bottom-4 text-sm text-white/60">
+        {index + 1} / {images.length}
+      </p>
+    </div>
+  );
+}
+
+function getEffectivePrice(rules: PricingRule[], defaultPrice: number): number {
+  const today = new Date().toISOString().split("T")[0];
+  const active = rules
+    .filter((r) => r.room_number === null && r.start_date <= today && r.end_date >= today)
+    .sort((a, b) => b.priority - a.priority);
+  return active[0]?.price ?? defaultPrice;
+}
+
+function VillaDetailPage() {
+  const villa = Route.useLoaderData() as Villa;
+  const gallery: string[] = villa.images.length > 0 ? villa.images : [villa.image];
+
+  const [showAll, setShowAll] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [rules, setRules] = useState<PricingRule[]>([]);
+
+  useEffect(() => {
+    // Fetch pricing rules silently — no token needed, using admin endpoint would fail
+    // Use the public pricing endpoint instead
+    fetch(`${import.meta.env.VITE_API_URL ?? "http://localhost/firstrose/backend"}/api/pricing.php?villa_id=${villa.id}&month=${new Date().toISOString().slice(0, 7)}`)
+      .then((r) => r.ok ? r.json() : [])
+      .then(setRules)
+      .catch(() => {});
+  }, [villa.id]);
+
+  const displayPrice = getEffectivePrice(rules, villa.price);
+
+  useEffect(() => {
+    try {
+      const title = `${villa.name} — Firstrose`;
+      const description = villa.description;
+      const url = SITE_URL + `/villas/${villa.id}`;
+      const image = villa.image || SITE_URL + "/assets/images/og-image.jpg";
+
+      document.title = title;
+
+      const ensureMeta = (attr: string, name: string, content: string) => {
+        const selector = `meta[${attr}="${name}"]`;
+        let el = document.querySelector(selector) as HTMLMetaElement | null;
+        if (!el) {
+          el = document.createElement("meta");
+          el.setAttribute(attr, name);
+          document.head.appendChild(el);
+        }
+        el.setAttribute("content", content);
+      };
+
+      ensureMeta("name", "description", description);
+      ensureMeta("property", "og:title", title);
+      ensureMeta("property", "og:description", description);
+      ensureMeta("property", "og:type", "product");
+      ensureMeta("property", "og:url", url);
+      ensureMeta("property", "og:image", image);
+
+      ensureMeta("name", "twitter:card", "summary_large_image");
+      ensureMeta("name", "twitter:title", title);
+      ensureMeta("name", "twitter:description", description);
+      ensureMeta("name", "twitter:image", image);
+
+      let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+      if (!canonical) {
+        canonical = document.createElement("link");
+        canonical.setAttribute("rel", "canonical");
+        document.head.appendChild(canonical);
+      }
+      canonical.setAttribute("href", url);
+
+      const ld = {
+        "@context": "https://schema.org",
+        "@type": "LodgingBusiness",
+        name: villa.name,
+        description: villa.description,
+        image: image,
+        url: url,
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: villa.location || "Diani Beach",
+        },
+        offers: {
+          "@type": "Offer",
+          price: displayPrice,
+          priceCurrency: villa.currency ?? "KSH",
+        },
+      };
+
+      let script = document.querySelector('script[type="application/ld+json"][data-generated="firstrose-villa"]') as HTMLScriptElement | null;
+      if (!script) {
+        script = document.createElement("script");
+        script.type = "application/ld+json";
+        script.setAttribute("data-generated", "firstrose-villa");
+        document.head.appendChild(script);
+      }
+      script.textContent = JSON.stringify(ld);
+    } catch (e) {
+      // ignore
+    }
+  }, [villa, displayPrice]);
+
+  const visibleImages = showAll ? gallery : gallery.slice(0, INITIAL_COUNT);
+  const hasMore = gallery.length > INITIAL_COUNT;
+
+  return (
+    <div className="pb-24">
+      {/* Lightbox */}
+      {lightboxIndex !== null && (
+        <Lightbox
+          images={gallery}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onPrev={() => setLightboxIndex((i) => (i !== null ? i - 1 : null))}
+          onNext={() => setLightboxIndex((i) => (i !== null ? i + 1 : null))}
+        />
+      )}
+
+      {/* Back */}
+      <div className="mx-auto max-w-7xl px-6 pt-8">
+        <Link
+          to="/villas"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-primary"
+        >
+          ← All Villas
+        </Link>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-6">
+        {/* Info + booking */}
+        <div className="mt-10 flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            variants={fadeInLeft}
+            transition={revealTransition()}
+            className="flex-1"
+          >
+            <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+              {villa.location}
+            </p>
+            <h1 className="mt-2 font-serif text-4xl text-foreground md:text-5xl">{villa.name}</h1>
+            <div className="mt-5 flex flex-wrap gap-6 text-sm text-muted-foreground">
+              <span>{villa.beds} Bedrooms</span>
+              <span>{villa.baths} Baths</span>
+              <span>Up to {villa.guests} guests</span>
+            </div>
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground">
+              {villa.description}
+            </p>
+          </motion.div>
+
+          {/* Pricing card */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={viewportOnce}
+            variants={fadeInRight}
+            transition={revealTransition(0.1)}
+            className="shrink-0 rounded-2xl border border-border/60 bg-card p-6 shadow-[var(--shadow-card)] lg:w-72"
+          >
+            <p className="font-serif text-3xl text-foreground">
+              {villa.currency === "KSH" ? "KSH " : "$"}
+              {displayPrice.toLocaleString()}
+              <span className="text-sm font-sans text-muted-foreground">
+                {" "}
+                {villa.priceLabel ?? "/ night"}
+              </span>
+            </p>
+            {displayPrice !== villa.price && (
+              <p className="mt-0.5 text-xs text-muted-foreground line-through">
+                KSH {villa.price.toLocaleString()}
+              </p>
+            )}
+            {villa.minStay && (
+              <p className="mt-1 text-xs text-muted-foreground">Minimum {villa.minStay} days</p>
+            )}
+            {villa.monthlyDiscount && (
+              <p className="text-xs text-muted-foreground">
+                {villa.monthlyDiscount}% discount for monthly stays
+              </p>
+            )}
+            <Link
+              to="/contact"
+              className="mt-5 block rounded-full bg-primary px-6 py-3 text-center text-sm font-medium text-primary-foreground transition-all hover:scale-105 hover:bg-primary/90"
+            >
+              Book this villa
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* Gallery */}
+        {gallery.length > 0 && (
+          <div className="mt-16">
+            <motion.h2
+              initial="hidden"
+              whileInView="visible"
+              viewport={viewportOnce}
+              variants={fadeInUp}
+              transition={revealTransition()}
+              className="mb-6 font-serif text-2xl text-foreground"
+            >
+              Gallery
+              <span className="ml-3 font-sans text-sm font-normal text-muted-foreground">
+                {gallery.length} photos
+              </span>
+            </motion.h2>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+              {visibleImages.map((src: string, i: number) => (
+                <motion.button
+                  key={i}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={viewportOnce}
+                  variants={fadeInUp}
+                  transition={revealTransition((i % 6) * 0.06)}
+                  className="aspect-[4/3] overflow-hidden rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                  onClick={() => setLightboxIndex(i)}
+                  aria-label={`View photo ${i + 1}`}
+                >
+                  <img
+                    src={src}
+                    alt={`${villa.name} — photo ${i + 1}`}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                  />
+                </motion.button>
+              ))}
+            </div>
+
+            {hasMore && (
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setShowAll((v) => !v)}
+                  className="rounded-full border border-border px-8 py-2.5 text-sm font-medium text-foreground transition-all hover:border-primary hover:text-primary"
+                >
+                  {showAll
+                    ? "Show less"
+                    : `View all ${gallery.length} photos`}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
